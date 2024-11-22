@@ -75,6 +75,7 @@ class Pembayaran:
             'truk': 100000,
             'bus': 300000
         }
+        return denda.get(jenis_kendaraan, 0)
         
         if jenis_kendaraan in denda:
             print(f"Denda untuk {jenis_kendaraan}: Rp{denda[jenis_kendaraan]}")

@@ -6,7 +6,7 @@ from pembayaran import Pembayaran
 from database import Database
 
 def main():
-    st.title("Sistem Parkir pada Living World Denpasar")
+    st.title("Sistem Pembayaran Parkir Otomatis")
 
     db = Database()
     
@@ -64,12 +64,8 @@ def main():
                                 - Jenis Kendaraan: {jenis_kendaraan}
                                 - Slot Parkir: {slot_dialokasikan}
                                 - Waktu Masuk: {waktu_masuk.strftime('%Y-%m-%d %H:%M:%S')}
+                                - Harga tiket: Rp{st.session_state.parkir.harga[jenis_kendaraan]:}/hari
                                 """)
-                            else:
-                                st.session_state.parkir.kosongkan_slot(jenis_kendaraan, slot_dialokasikan)
-                                st.error("Gagal mencatat kendaraan.")
-                        else:
-                            st.warning("Slot parkir penuh.")
                     else:
                         st.warning(f"Tidak ada slot parkir tersedia untuk {jenis_kendaraan}.")
 
@@ -84,11 +80,13 @@ def main():
         # Pencarian kendaraan berdasarkan nomor plat atau kode unik
         if search_method == "Kode Unik":
             kode_unik = st.text_input("Masukkan kode unik:", key="kode_unik")
+            kendaraan = st.session_state.plat_kendaraan.cari_kendaraan(kode_unik=kode_unik)
             if kode_unik:
                 kendaraan = st.session_state.plat_kendaraan.cari_kendaraan(kode_unik=kode_unik)
                 is_using_kode_unik = True
         else:
             nomor_plat = st.text_input("Masukkan nomor plat kendaraan:", key="nomor_plat")
+            kendaraan = st.session_state.plat_kendaraan.cari_kendaraan(nomor_plat=nomor_plat)
             if nomor_plat:
                 kendaraan = st.session_state.plat_kendaraan.cari_kendaraan(nomor_plat=nomor_plat)
                 is_using_kode_unik = False
@@ -109,18 +107,22 @@ def main():
                 'nomor_plat': kendaraan['nomor_plat']
             }
             
-            durasi = st.session_state.pembayaran.hitung_durasi(data_kendaraan['timestamp'])
-            biaya = st.session_state.pembayaran.hitung_biaya_kendaraan(data_kendaraan)
-
-            st.info(f"Durasi Parkir: {durasi} hari")
-            st.info(f"Biaya Parkir: Rp{biaya}")
-
+            if is_using_kode_unik:
+                durasi = st.session_state.pembayaran.hitung_durasi(data_kendaraan['timestamp'])
+                biaya = st.session_state.pembayaran.hitung_biaya_kendaraan(data_kendaraan)
+                st.info(f"Durasi Parkir: {durasi} hari")
+                st.info(f"Biaya Parkir: Rp{biaya}")
+            else:
+                durasi = st.session_state.pembayaran.hitung_durasi(data_kendaraan['timestamp'])
+                denda = st.session_state.pembayaran.bayar_denda(data_kendaraan)
+                st.info(f"Denda Parkir: Rp{denda}")
+                
             pembayaran = st.number_input("Jumlah Pembayaran:", min_value=0, step=1000)
             if st.button("Proses Pembayaran"):
-                if pembayaran < biaya:
+                if pembayaran < (biaya if is_using_kode_unik else denda):
                     st.error("Pembayaran kurang!")
                 else:
-                    kembalian = pembayaran - biaya
+                    kembalian = pembayaran - (biaya if is_using_kode_unik else denda)
                     st.success(f"Pembayaran berhasil. Kembalian: Rp{kembalian}")
 
                     # Update 
@@ -131,14 +133,6 @@ def main():
                     """, (waktu_keluar, biaya, kendaraan['nomor_plat']))
 
                     st.success("Data kendaraan berhasil diperbarui.")
-
-                    # # Pastikan data tetap ada di session state setelah rerun
-                    # st.session_state.plat_kendaraan.save_data(
-                    #     kendaraan['nomor_plat'],
-                    #     kendaraan['jenis_kendaraan'],
-                    #     kendaraan['timestamp'],
-                    #     kendaraan['slot']
-                    # )  # Pastikan data kendaraan tetap tersimpan
                     
                     # Kosongkan slot
                     st.session_state.parkir.kosongkan_slot(kendaraan['jenis_kendaraan'], kendaraan['slot'])
@@ -181,7 +175,7 @@ def main():
         denda_cols = st.columns(5)
         for idx, (jenis, nominal) in enumerate(denda_info.items()):
             with denda_cols[idx]:
-                st.markdown(f"<h3>{jenis.capitalize()}</h3><h4>Rp{nominal:,}</h4>", unsafe_allow_html=True)
+                st.markdown(f"<h3>{jenis.capitalize()}</h3><h4>Rp{nominal:}</h4>", unsafe_allow_html=True)
         
         # Tampilkan data kendaraan yang sedang parkir
         st.subheader("Kendaraan Yang Sedang Parkir")
