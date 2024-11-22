@@ -7,7 +7,15 @@ class Pembayaran:
     
     def hitung_durasi(self, timestamp):
         """Hitung durasi parkir berdasarkan timestamp masuk (dalam hari)."""
-        timestamp_masuk = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+        if isinstance(timestamp, str):
+            # Parsing jika formatnya string
+            timestamp_masuk = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+        elif isinstance(timestamp, datetime):
+            # Jika sudah berupa objek datetime, gunakan langsung
+            timestamp_masuk = timestamp
+        else:
+            raise ValueError("Format timestamp tidak valid. Harus berupa string atau datetime.")
+        
         timestamp_keluar = datetime.now()
         durasi = (timestamp_keluar - timestamp_masuk).days
         if (timestamp_keluar - timestamp_masuk).seconds > 0:
@@ -16,11 +24,16 @@ class Pembayaran:
     
     def hitung_biaya_kendaraan(self, data_kendaraan):
         """Menghitung biaya parkir untuk kendaraan tertentu berdasarkan hari parkir."""
+        if not isinstance(data_kendaraan, dict):
+            raise ValueError("Data kendaraan harus berupa dictionary.")
+        
+        if 'timestamp' not in data_kendaraan or 'jenis_kendaraan' not in data_kendaraan:
+            raise KeyError("Data kendaraan harus memiliki 'timestamp' dan 'jenis_kendaraan'")
+        
         durasi = self.hitung_durasi(data_kendaraan['timestamp'])
         biaya = self.plat_kendaraan.parkir.hitung_biaya(data_kendaraan['jenis_kendaraan'], durasi)
-        print(f"Kendaraan dengan plat {data_kendaraan['nomor_plat']}: \nDurasi {durasi} hari.")
         return biaya
-
+    
     def bayar_parkir(self, nomor_plat, kode_unik=None):
         """Memproses pembayaran berdasarkan kode unik dan nomor plat."""
         data_kendaraan = self.plat_kendaraan.cari_kendaraan(kode_unik=kode_unik, nomor_plat=nomor_plat)
@@ -31,7 +44,7 @@ class Pembayaran:
         
         if kode_unik and data_kendaraan['kode_unik'] == kode_unik:
             # Validasi kode unik dan hitung biaya
-            biaya = self.hitung_biaya_kendaraan(data_kendaraan)
+            biaya = self.hitung_biaya_kendaraan(data_kendaraan['jenis_kendaraan'], self.hitung_durasi(data_kendaraan['timestamp']))
             if biaya > 0:
                 print(f"Biaya parkir: Rp{biaya}")
                 print("Silakan lakukan pembayaran.")

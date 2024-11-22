@@ -43,3 +43,5 @@ def delta(state, symbol):
         return transitions[state][symbol]
     else:
         return set()
+    
+    # return transitions.get(state, {}).get(symbol, [])
