@@ -13,7 +13,7 @@ class PlatKendaraan:
         kode_unik = f"{nomor_plat}-{unique_id}"
         return kode_unik
 
-    def catat_kendaraan(self, jenis_kendaraan, nomor_plat, allocated_slot=None):
+    def catat_kendaraan(self, jenis_kendaraan, nomor_plat, allocated_slot=None, id_admin=None):
         slot = allocated_slot if allocated_slot else self.parkir.alokasikan_slot(jenis_kendaraan)
         
         if slot:
@@ -36,7 +36,7 @@ class PlatKendaraan:
             print(f"Kendaraan dengan plat {nomor_plat} dicatat pada slot {slot} pada {timestamp}.")
             
             # Simpan data ke database
-            self.db.simpan_data_parkir(nomor_plat, jenis_kendaraan, timestamp, slot)
+            self.db.simpan_data_parkir(nomor_plat, jenis_kendaraan, timestamp, slot, id_admin)
             
             return kode_unik
         else:

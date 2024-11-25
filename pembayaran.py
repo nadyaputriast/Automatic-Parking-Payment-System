@@ -22,18 +22,11 @@ class Pembayaran:
             durasi += 1
         return durasi
     
-    def hitung_biaya_kendaraan(self, data_kendaraan):
+    def hitung_biaya_kendaraan(self, jenis_kendaraan, durasi):
         """Menghitung biaya parkir untuk kendaraan tertentu berdasarkan hari parkir."""
-        if not isinstance(data_kendaraan, dict):
-            raise ValueError("Data kendaraan harus berupa dictionary.")
-        
-        if 'timestamp' not in data_kendaraan or 'jenis_kendaraan' not in data_kendaraan:
-            raise KeyError("Data kendaraan harus memiliki 'timestamp' dan 'jenis_kendaraan'")
-        
-        durasi = self.hitung_durasi(data_kendaraan['timestamp'])
-        biaya = self.plat_kendaraan.parkir.hitung_biaya(data_kendaraan['jenis_kendaraan'], durasi)
+        biaya = self.plat_kendaraan.parkir.hitung_biaya(jenis_kendaraan, durasi)
         return biaya
-    
+
     def bayar_parkir(self, nomor_plat, kode_unik=None):
         """Memproses pembayaran berdasarkan kode unik dan nomor plat."""
         data_kendaraan = self.plat_kendaraan.cari_kendaraan(kode_unik=kode_unik, nomor_plat=nomor_plat)
@@ -75,7 +68,6 @@ class Pembayaran:
             'truk': 100000,
             'bus': 300000
         }
-        return denda.get(jenis_kendaraan, 0)
         
         if jenis_kendaraan in denda:
             print(f"Denda untuk {jenis_kendaraan}: Rp{denda[jenis_kendaraan]}")
