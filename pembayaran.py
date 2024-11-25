@@ -58,9 +58,8 @@ class Pembayaran:
             print("Kode unik tidak valid atau tidak tersedia.")
             return self.bayar_denda(data_kendaraan)
     
-    def bayar_denda(self, data_kendaraan):
-        """Memproses pembayaran denda jika kode unik tidak tersedia."""
-        jenis_kendaraan = data_kendaraan['jenis_kendaraan']
+    def bayar_denda(self, jenis_kendaraan):
+        """Menghitung denda parkir untuk kendaraan tertentu."""
         denda = {
             'motor': 20000,
             'mobil': 30000,
@@ -68,26 +67,7 @@ class Pembayaran:
             'truk': 100000,
             'bus': 300000
         }
-        
-        if jenis_kendaraan in denda:
-            print(f"Denda untuk {jenis_kendaraan}: Rp{denda[jenis_kendaraan]}")
-            print("Silakan lakukan pembayaran denda.")
-            
-            uang_dibayar = int(input("Masukkan nominal uang: "))
-            
-            if uang_dibayar < denda[jenis_kendaraan]:
-                print("Uang yang dibayar kurang.")
-                return self.bayar_denda(data_kendaraan)
-            elif uang_dibayar > denda[jenis_kendaraan]:
-                kembalian = uang_dibayar - denda[jenis_kendaraan]
-                print(f"Kembalian: Rp{kembalian}")
-            else:
-                print("Pembayaran denda berhasil.")
-                data_kendaraan
-        else:
-            print("Jenis kendaraan tidak valid.")
-            return None
-
+        return denda.get(jenis_kendaraan, 0)
 
 if __name__ == "__main__":
     plat_kendaraan = PlatKendaraan()

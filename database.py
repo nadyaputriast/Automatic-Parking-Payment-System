@@ -95,3 +95,12 @@ class Database:
         query = "SELECT * FROM parkir WHERE id_admin = %s AND waktu_keluar IS NULL"
         result = self.execute_query(query, (id_admin,))
         return result if result else []
+    
+    def ambil_ketersediaan_slot(self, id_admin):
+        query = """
+        SELECT jenis_kendaraan, COUNT(*) as terisi
+        FROM parkir
+        WHERE id_admin = %s AND waktu_keluar IS NULL
+        GROUP BY jenis_kendaraan
+        """
+        return self.execute_query(query, (id_admin,))

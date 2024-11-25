@@ -80,14 +80,16 @@ class PlatKendaraan:
                 return
         print("Nomor plat tidak ditemukan.")
 
-    def cari_kendaraan(self, kode_unik=None, nomor_plat=None):
+    def cari_kendaraan(self, kode_unik=None, nomor_plat=None, id_admin=None):
         """Cari kendaraan berdasarkan kode unik atau nomor plat."""
         for kendaraan in self.data_kendaraan:
             if kode_unik and kendaraan['kode_unik'] == kode_unik:
                 return kendaraan
             if nomor_plat and kendaraan['nomor_plat'] == nomor_plat:
                 return kendaraan
-        return None
+        
+        result = self.db.cari_kendaraan(kode_unik=kode_unik, plat=nomor_plat, id_admin=id_admin)
+        return result
 
 # Contoh penggunaan
 if __name__ == "__main__":
